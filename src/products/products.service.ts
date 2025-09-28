@@ -1,12 +1,16 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Repository } from 'typeorm';
+import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+
+import { Product } from './entities/product.entity';
+import { PostgresError } from 'src/interfaces/error.interface';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Product } from './entities/product.entity';
-import { Repository } from 'typeorm';
 
 @Injectable()
 export class ProductsService {
+
+  private readonly logger = new Logger('ProductsService')
 
   constructor(
     @InjectRepository(Product)
@@ -24,11 +28,8 @@ export class ProductsService {
       return product
       
     } catch (error) {
-      console.error(error)
-      throw new InternalServerErrorException('Error!!')
+      this.handleDBException(error)
     }
-
-    return 'This action adds a new product';
   }
 
   findAll() {
@@ -46,4 +47,17 @@ export class ProductsService {
   remove(id: number) {
     return `This action removes a #${id} product`;
   }
+
+  private handleDBException(error: unknown) {
+
+    const errorCode = (error as PostgresError).code
+    const errorDetail = (error as PostgresError).detail
+
+    if (errorCode === '23505') throw new BadRequestException(errorDetail);
+
+    this.logger.error(error)
+    throw new InternalServerErrorException('Unexpected error')
+  }
+
 }
+
