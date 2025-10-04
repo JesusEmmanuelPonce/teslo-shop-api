@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ProductsModule } from './products/products.module';
+import { CommonModule } from './common/common.module';
 
 import configuration from 'config/configuration';
 
@@ -26,7 +27,8 @@ import configuration from 'config/configuration';
         synchronize: true,
       }),
     }),
-    ProductsModule
+    ProductsModule,
+    CommonModule
   ],
 })
 export class AppModule {}
