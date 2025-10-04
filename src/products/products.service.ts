@@ -1,11 +1,12 @@
 import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 
 import { Product } from './entities/product.entity';
 import { PostgresError } from 'src/interfaces/error.interface';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class ProductsService {
@@ -32,15 +33,16 @@ export class ProductsService {
     }
   }
 
-  findAll() {
-    try {
-      const products = this.productRepository.find()
+  findAll(paginationDto: PaginationDto) {
+   
+    const { limit = 10, offset = 0 } = paginationDto
 
-      return products
+    const products = this.productRepository.find({
+      take: limit,
+      skip: offset
+    })
 
-    } catch (error) {
-      this.handleDBException(error)
-    }
+    return products
   }
 
   async findOne(id: string) {
